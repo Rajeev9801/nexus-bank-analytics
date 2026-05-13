@@ -1,0 +1,10 @@
+pandas
+numpy
+matplotlib
+openpyxl
+reportlab
+pillow
+pyinstaller
+customtkinter
+ttkbootstrap
+Pillow
