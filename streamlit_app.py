@@ -10,9 +10,10 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from services.database import get_connection, init_db
-from services.auth_service import login, get_all_users, get_login_activity, signup, update_user, delete_user
+from services.auth_service import login, get_all_users, get_login_activity, signup, update_user, delete_user, create_default_admin
 from services.exporter import generate_enterprise_report
 from services.ai_engine import predict_future_balance, get_spending_insights, analyze_fraud
+from services.simulator import seed_initial_data, TransactionSimulator
 from utils import COLORS
 
 # --- Configuration & Setup ---
@@ -23,8 +24,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize Database
+# Initialize Database and Seed Data
 init_db()
+create_default_admin()
+seed_initial_data()
+
+# --- Simulator Thread ---
+if 'simulator' not in st.session_state:
+    st.session_state.simulator = TransactionSimulator(interval=3)
+    st.session_state.simulator_running = False
 
 # --- Session State Management ---
 if 'logged_in' not in st.session_state:
@@ -108,6 +116,21 @@ def render_sidebar():
             
         selected_page = st.radio("Navigation", pages, label_visibility="collapsed")
         
+        st.markdown("---")
+        st.markdown("### ⚙️ System Controls")
+        sim_toggle = st.toggle("Live Transaction Simulator", value=st.session_state.simulator_running)
+        
+        if sim_toggle != st.session_state.simulator_running:
+            if sim_toggle:
+                st.session_state.simulator.start()
+                st.session_state.simulator_running = True
+                st.toast("Simulator Started! Live data incoming...")
+            else:
+                st.session_state.simulator.stop()
+                st.session_state.simulator_running = False
+                st.toast("Simulator Stopped.")
+            st.rerun()
+
         st.markdown("---")
         if st.button("Logout", use_container_width=True):
             do_logout()
