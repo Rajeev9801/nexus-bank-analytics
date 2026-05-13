@@ -4,7 +4,5 @@ matplotlib
 openpyxl
 reportlab
 pillow
-pyinstaller
-customtkinter
-ttkbootstrap
-Pillow
+streamlit
+plotly
